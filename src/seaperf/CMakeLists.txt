@@ -1,5 +1,6 @@
 add_executable(seaperf
   main.cc
+  server.cc
 )
 target_link_libraries(seaperf
   ${SEASTAR_LDFLAGS}
