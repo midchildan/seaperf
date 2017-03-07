@@ -16,14 +16,12 @@ future<> app_main(app_template& app) {
   listen_options lo;
   lo.reuse_address = true;
   auto server = new seaperf::server::Control{};
-  server->start().then([server, port] {
-      return server->listen(port);
-  }).then([server, port] {
-    print("Seaperf server listening on port %d ...\n", port);
-    engine().at_exit([server] {
-        return server->stop();
-    });
-  });
+  server->start()
+      .then([server, port] { return server->listen(port); })
+      .then([server, port] {
+        print("Seaperf server listening on port %d ...\n", port);
+        engine().at_exit([server] { return server->stop(); });
+      });
   return server->stopped();
 }
 

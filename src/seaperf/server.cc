@@ -1,3 +1,4 @@
+#include <core/reactor.hh>
 #include "server.hh"
 
 namespace seaperf {
@@ -18,6 +19,9 @@ future<> Server::do_accepts() {
             auto cs_sa = f_cs_sa.get();
             auto conn = new Conn{std::get<0>(std::move(cs_sa)),
                                  std::get<1>(std::move(cs_sa))};
+            // FIXME: hardcoded bench duration
+            using namespace std::chrono_literals;
+            conn->set_bench_duration(10s);
             conn->process().then_wrapped([this, conn](auto&& f) {
               delete conn;
               try {
@@ -47,8 +51,15 @@ future<> Server::stopped() {
 }
 
 future<> Conn::process() {
+  m_is_time_up = false;
+  m_bench_timer.set_callback([this] { m_is_time_up = true; });
+  m_bench_timer.arm(m_bench_duration);
+
   return repeat([this] {
            return m_in.read().then([this](auto buf) {
+             if (m_is_time_up) {
+               return make_ready_future<stop_iteration>(stop_iteration::yes);
+             }
              if (buf) {
                m_byte_cnt += buf.size();
                return make_ready_future<stop_iteration>(stop_iteration::no);
@@ -58,9 +69,16 @@ future<> Conn::process() {
            });
          })
       .then([this] {
-        print("bytes received: %d\n", m_byte_cnt);
-        return m_out.close();
+        using namespace std::chrono;
+        auto bench_sec = duration_cast<seconds>(m_bench_duration).count();
+        print("received: %d bytes\n", m_byte_cnt);
+        print("duration: %d s\n", bench_sec);
+        return when_all(m_in.close(), m_out.close()).then([](auto) {
+          make_ready_future<>();
+        });
       });
 }
+
+void Conn::set_bench_duration(timer<>::duration t) { m_bench_duration = t; }
 }  // namespace server
 }  // namespace seaperf

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <chrono>
+
 #include <core/distributed.hh>
 #include <core/reactor.hh>
 
@@ -14,12 +16,17 @@ class Conn {
   }
 
   future<> process();
+  void set_bench_duration(timer<>::duration t);
 
  private:
   connected_socket m_sock;
   input_stream<char> m_in;
   output_stream<char> m_out;
+
+  timer<>::duration m_bench_duration;
+  bool m_is_time_up = false;
   int64_t m_byte_cnt = 0;
+  timer<> m_bench_timer;
 };
 
 class Server {
