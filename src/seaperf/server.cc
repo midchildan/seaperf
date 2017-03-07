@@ -42,6 +42,10 @@ future<> Server::stop() {
   return make_ready_future<>();
 }
 
+future<> Server::stopped() {
+  return m_stopped.then([] { make_ready_future<>(); });
+}
+
 future<> Conn::process() {
   return repeat([this] {
            return m_in.read().then([this](auto buf) {

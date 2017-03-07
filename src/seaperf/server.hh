@@ -29,9 +29,12 @@ class Server {
   future<> listen(ipv4_addr addr);
   future<> do_accepts();
   future<> stop();
+  future<> stopped();
 
  private:
   server_socket m_listener;
+  promise<> m_all_connections_stopped;
+  future<> m_stopped = m_all_connections_stopped.get_future();
 };
 
 class Control {
@@ -41,6 +44,8 @@ class Control {
   future<> start() { return m_server->start(); }
 
   future<> stop() { return m_server->stop(); }
+
+  future<> stopped() { return m_server->invoke_on_all(&Server::stopped); }
 
   future<> listen(ipv4_addr addr) {
     return m_server->invoke_on_all(&Server::listen, addr);

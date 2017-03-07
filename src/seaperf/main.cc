@@ -24,6 +24,7 @@ future<> app_main(app_template& app) {
         return server->stop();
     });
   });
+  return server->stopped();
 }
 
 int main(int argc, char* argv[]) {
