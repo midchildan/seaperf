@@ -14,16 +14,15 @@ future<> Client::benchmark() {
     if (m_is_time_up) {
       return make_ready_future<stop_iteration>(stop_iteration::yes);
     }
-    m_sock.output().write(m_sendbuf)
-        .then_wrapped([this](auto&& f) {
-          try {
-            f.get();
-            return make_ready_future<stop_iteration>(stop_iteration::no);
-          } catch (std::exception& ex) {
-            std::cerr << "write error: " << ex.what() << std::endl;
-            return make_ready_future<stop_iteration>(stop_iteration::yes);
-          }
-        });
+    return m_out.write(m_sendbuf).then_wrapped([this](auto&& f) {
+      try {
+        f.get();
+      } catch (std::exception& ex) {
+        std::cerr << "write error: " << ex.what() << std::endl;
+        return make_ready_future<stop_iteration>(stop_iteration::yes);
+      }
+      return make_ready_future<stop_iteration>(stop_iteration::no);
+    });
   });
 }
 
@@ -36,8 +35,16 @@ future<> Client::run(ipv4_addr addr) {
 
   return engine().connect(addr).then([this](auto sock) mutable {
     m_sock = std::move(sock);
-    return this->benchmark();
+    m_in = m_sock.input();
+    m_out = m_sock.output();
+    return this->benchmark().then([this]() mutable {
+      return when_all(m_in.close(), m_out.close()).discard_result();
+    });
   });
+}
+
+void Client::set_bench_duration(timer<>::duration) {
+  // TODO
 }
 }
 }

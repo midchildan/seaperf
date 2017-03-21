@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -15,18 +16,24 @@ future<> app_main(app_template& app) {
   auto host = args["host"].as<std::string>();
   auto port = args["port"].as<uint16_t>();
   auto server_addr = ipv4_addr(host, port);
-  auto client = seaperf::client::Client{};
-  return client.run(server_addr);
+  auto bench_duration = std::chrono::seconds{args["time"].as<uint32_t>()};
+
+  auto client = new seaperf::client::Client{};
+  client->set_bench_duration(bench_duration);
+  return client->run(server_addr);
 }
 
 int main(int argc, char* argv[]) {
   namespace bpo = boost::program_options;
 
   app_template app;
-  app.add_options()("host", bpo::value<std::string>()->default_value("127.0.0.1"),
+  app.add_options()("host",
+                    bpo::value<std::string>()->default_value("127.0.0.1"),
                     "seaperf server host");
   app.add_options()("port", bpo::value<uint16_t>()->default_value(12865),
                     "seaperf server port");
+  app.add_options()("time", bpo::value<uint32_t>()->default_value(10),
+                    "benchmark duration");
 
   try {
     app.run(argc, argv, [&app] { return app_main(app); });

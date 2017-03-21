@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <iterator>
 #include <random>
+#include <sstream>
 #include <string>
 #include "utils.hh"
 
@@ -12,8 +14,9 @@ std::string random_string(std::size_t len) {
     return charset[rnd() % sizeof(charset)];
   };
 
-  std::string res;
-  std::generate_n(res.begin(), len, randchar);
-  return res;
+  std::ostringstream rand_ss;
+  std::ostream_iterator<char> rand_os_it {rand_ss};
+  std::generate_n(rand_os_it, len, randchar);
+  return rand_ss.str();
 }
 }

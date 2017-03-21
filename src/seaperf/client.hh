@@ -17,6 +17,8 @@ class Client {
   future<> benchmark();
 
   connected_socket m_sock;
+  input_stream<char> m_in;
+  output_stream<char> m_out;
 
   std::string m_sendbuf;
   timer<>::duration m_bench_duration;
