@@ -27,7 +27,7 @@ future<> Client::benchmark() {
 }
 
 future<> Client::run(ipv4_addr addr) {
-  m_sendbuf = random_string(k_bufsize);
+  m_sendbuf = random_string(m_sendbuf_size);
 
   m_is_time_up = false;
   m_bench_timer.set_callback([this] { m_is_time_up = true; });
@@ -44,5 +44,7 @@ future<> Client::run(ipv4_addr addr) {
 }
 
 void Client::set_bench_duration(std::chrono::seconds t) { m_bench_duration = t; }
+
+void Client::set_bufsize(size_t bufsize) { m_sendbuf_size = bufsize; }
 }  // namespace client
 }  // namespace seaperf

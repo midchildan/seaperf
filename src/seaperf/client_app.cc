@@ -17,9 +17,11 @@ future<> app_main(app_template& app) {
   auto port = args["port"].as<uint16_t>();
   auto server_addr = ipv4_addr(host, port);
   auto bench_duration = std::chrono::seconds{args["time"].as<uint32_t>()};
+  auto sendbuf_size = args["bufsize"].as<size_t>();
 
   auto client = new seaperf::client::Client{};
   client->set_bench_duration(bench_duration);
+  client->set_bufsize(sendbuf_size);
   return client->run(server_addr);
 }
 
@@ -34,6 +36,8 @@ int main(int argc, char* argv[]) {
                     "seaperf server port");
   app.add_options()("time", bpo::value<uint32_t>()->default_value(10),
                     "benchmark duration");
+  app.add_options()("bufsize", bpo::value<size_t>()->default_value(64000),
+                    "Size of buffer to send.");
 
   try {
     app.run(argc, argv, [&app] { return app_main(app); });
