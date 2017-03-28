@@ -11,7 +11,7 @@ class Client {
   Client();
 
   future<> run(ipv4_addr addr);
-  void set_bench_duration(timer<>::duration t);
+  void set_bench_duration(std::chrono::seconds t);
 
  private:
   future<> benchmark();
@@ -21,12 +21,12 @@ class Client {
   output_stream<char> m_out;
 
   std::string m_sendbuf;
-  timer<>::duration m_bench_duration;
+  std::chrono::seconds m_bench_duration;
   bool m_is_time_up = false;
   timer<> m_bench_timer;
   std::chrono::seconds m_margin{5};
 
-  static constexpr auto k_bufsize = 100;
+  static constexpr auto k_bufsize = 64000;
 };
 }
 }

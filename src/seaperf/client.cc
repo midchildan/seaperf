@@ -43,8 +43,6 @@ future<> Client::run(ipv4_addr addr) {
   });
 }
 
-void Client::set_bench_duration(timer<>::duration) {
-  // TODO
-}
-}
-}
+void Client::set_bench_duration(std::chrono::seconds t) { m_bench_duration = t; }
+}  // namespace client
+}  // namespace seaperf
